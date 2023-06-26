@@ -1,16 +1,16 @@
 # Elden Ring alternative saves
 
+This mod allows you to use an alternate save file for your playthrough when enabled.
+
 **A word of warning**: this mod has been tested as far as I can but mod loaders use wildly different approaches and timings
 for loading DLLs. Make sure to back up your save games because if this mod loads too late it might start writing to your
 vanilla save file first.
 
-This mod has been extensively tested with [ModEngine2](https://github.com/soulsmods/ModEngine2).
+This mod has been extensively tested with [ModEngine2](https://github.com/soulsmods/ModEngine2). And somewhat with
+TechieW's Elden Mod Loader.
 
 #### How do I back up my save files?
 You can find your save files in the folder `%appdata%/EldenRing/<steam ID>`. Making a copy of that folder should suffice.
-
-## What is this?
-This mod allows you to use an alternate savefile for your playthrough when enabled.
 
 ## Why do I want this?
 Maybe you're a user with multiple mods and want to simplify the process of going back to vanilla online for a few.
@@ -28,7 +28,7 @@ config_eldenring.toml:
 ```toml
 # ...
 external_dlls = ["eldenring_alt_saves.dll", "some_other_mod.dll"]
-#...
+# ...
 ```
 *If you've chosen a path outside your modengine2 directory make sure to put in the appropriate path to the DLL.*
 
@@ -41,7 +41,7 @@ config_eldenring.toml:
 ```toml
 # ...
 external_dlls = ["mod/eldenring_alt_saves.dll", "mod/some_other_dlls.dll"]
-#...
+# ...
 ```
 Now read the configuration section as you'll most likely want to configure the extension used in your position.
 
@@ -59,14 +59,17 @@ extension = ".my-extension-goes-here"
 seamless_extension = ".my-extension-goes-here.co2"
 ```
 
+**If you are setting up this mod for yourself and you are using the config, make sure to specify an alternative seamless
+coop extension. Not doing so will make modded seamless and modded non-seamless play-throughs use the same file.**
+
 The `altsaves.toml` can be put in the game directory immediately (recommended approach for users with manually managed 
 sets of mods) *or* the modengine2 mod folder itself (allows mod developers to determine the save file extensions).
 
-### Best practices around configuration (read me!!!)
-If you are setting up this mod for yourself and you are using the config, make sure to specify an alternative seamless
-coop extension. **Not doing so will make modded seamless and modded non-seamless play-throughs use the same file**.
+### Configuration file priority
+The configuration file loading piggybacks off of modengine2 when possible. This means that the priority is determined
+by the order of mods in modengine2's configuration. However, it is possible to override a mod-supplied `altsaves.toml`
+file from the game directory itself. In the case of other mod loaders it will only read from the game directory.
 
 ## How does it work?
 It hooks whatever is responsible for reading from and writing to your save files intercepting the file extension that
 is used.
-

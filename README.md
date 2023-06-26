@@ -18,10 +18,6 @@ Maybe you're a user with multiple mods and want to simplify the process of going
 Or maybe you're a mod developer, and you want your overhaul mod to use a different extension so people don't accidentally
 load save files that are affected by other mods.
 
-## How does it work?
-It hooks whatever is responsible for reading from and writing to your save files intercepting the file extension that
-is used.
-
 ## Scenarios:
 
 ### I am a player and have a set of mods that I don't want to touch my vanilla save file.
@@ -70,4 +66,8 @@ sets of mods) *or* the modengine2 mod folder itself (allows mod developers to de
 ### Best practices around configuration (read me!!!)
 If you are setting up this mod for yourself and you are using the config, make sure to specify an alternative seamless
 coop extension. **Not doing so will make modded seamless and modded non-seamless play-throughs use the same file**.
+
+## How does it work?
+It hooks whatever is responsible for reading from and writing to your save files intercepting the file extension that
+is used.
 

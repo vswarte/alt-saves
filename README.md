@@ -43,8 +43,7 @@ config_eldenring.toml:
 external_dlls = ["mod/eldenring_alt_saves.dll", "mod/some_other_dlls.dll"]
 #...
 ```
-
-Then read to the configuration section.
+Now read the configuration section as you'll most likely want to configure the extension used in your position.
 
 ## Configuration
 Sometimes you have multiple sets of mods, or you're developing a mod that should use a different save file by default.

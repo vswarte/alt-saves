@@ -1,8 +1,8 @@
 # Elden Ring alternative saves
 
 **A word of warning**: this mod has been tested as far as I can but mod loaders use wildly different approaches and timings
-for loading DLLs. Make sure to backup your save games because if this mod loads too late it might start writing to your
-vanilla save file.
+for loading DLLs. Make sure to back up your save games because if this mod loads too late it might start writing to your
+vanilla save file first.
 
 This mod has been extensively tested with [ModEngine2](https://github.com/soulsmods/ModEngine2).
 
@@ -15,7 +15,7 @@ This mod allows you to use an alternate savefile for your playthrough when enabl
 ## Why do I want this?
 Maybe you're a user with multiple mods and want to simplify the process of going back to vanilla online for a few.
 (afaik this currently requires swapping out save files manually or just playing modded with seamless coop).
-Or maybe you're a mod developer and you want your overhaul mod to use a different extension so people don't accidentally
+Or maybe you're a mod developer, and you want your overhaul mod to use a different extension so people don't accidentally
 load save files that are affected by other mods.
 
 ## How does it work?
@@ -24,7 +24,7 @@ is used.
 
 ## Scenarios:
 
-### I am a player and have a set of mods that I don't want touching my vanilla savefile.
+### I am a player and have a set of mods that I don't want to touch my vanilla save file.
 Place the DLL in your modengine2 folder or any other folder, then load the DLL modengine2 using the following
 configuration options:
 
@@ -69,5 +69,5 @@ sets of mods) *or* the modengine2 mod folder itself (allows mod developers to de
 
 ### Best practices around configuration (read me!!!)
 If you are setting up this mod for yourself and you are using the config, make sure to specify an alternative seamless
-coop extension. **Not doing so will make modded seamless and modded non-seamless playthroughs use the same file**.
+coop extension. **Not doing so will make modded seamless and modded non-seamless play-throughs use the same file**.
 

@@ -73,3 +73,8 @@ file from the game directory itself. In the case of other mod loaders it will on
 ## How does it work?
 It hooks whatever is responsible for reading from and writing to your save files intercepting the file extension that
 is used.
+
+# Credit
+- Churchguard for original (now rewritten) approach to changing the extension
+- Sfix for helping me figure out why ME2 didn't catch and rewrite the config file load
+- Philiquaz and Shion for sitting through my rants while debugging why the OG impl didn't work for them

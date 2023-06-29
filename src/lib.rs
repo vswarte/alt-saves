@@ -6,6 +6,7 @@ mod config;
 
 use broadsword::dll;
 use broadsword::runtime;
+use broadsword::runtime::get_module_handle;
 use detour::static_detour;
 
 use windows::core::{HSTRING, PCWSTR};
@@ -17,18 +18,54 @@ const SAVEGAME_BACKUP_EXTENSION: &str = ".sl2.bak";
 const SC_SAVEGAME_EXTENSION: &str = ".co2";
 const SC_SAVEGAME_BACKUP_EXTENSION: &str = ".co2.bak";
 
+const REGBIN_CHECK_FLAG_IBO: usize = 0x3acea92;
+const REGULATIONMANAGER_CONSTRUCTOR_IBO: usize = 0xdc9330;
+
 static_detour! {
     static CREATE_FILE_W_HOOK: unsafe extern "system" fn(PCWSTR, u32, u32, u64, u32, u32, HANDLE) -> u64;
+    static REGULATIONMANAGER_CONSTRUCTOR: unsafe extern "system" fn(u64, u64) -> u64;
 }
 
 #[dll::entrypoint]
 pub fn entry(_: usize) -> bool {
+    // Set this up anyways as it'll log panics too
     broadsword::logging::init("log/alt-saves.log");
-    apply_hooks();
+    apply_file_hook();
+    apply_regulation_hook();
     return true;
 }
 
-fn apply_hooks() {
+fn apply_regulation_hook() {
+    let regulationmanager_constructor = get_module_handle("eldenring.exe".to_string())
+        .expect("Could not locate eldenring.exe") + REGULATIONMANAGER_CONSTRUCTOR_IBO;
+
+    unsafe {
+        REGULATIONMANAGER_CONSTRUCTOR
+            .initialize(
+                mem::transmute(regulationmanager_constructor),
+                |allocated_space: u64, param_2: u64| {
+                    let result = REGULATIONMANAGER_CONSTRUCTOR.call(allocated_space, param_2);
+                    patch_regbin_check();
+                    result
+                }
+            )
+            .unwrap();
+
+        REGULATIONMANAGER_CONSTRUCTOR.enable().unwrap();
+    }
+}
+
+// Overwrites the flag that seems to determine if the regulation bin file should be checked against
+// a particular hash. This check causes new save files to throw errors when the regbin has been
+// changed.
+fn patch_regbin_check() {
+    let ptr = get_module_handle("eldenring.exe".to_string())
+        .expect("Could not find ER base") + REGBIN_CHECK_FLAG_IBO;
+
+    unsafe { *(ptr as *mut u8) = 0x0 };
+}
+
+fn apply_file_hook() {
     let create_file_w = runtime::get_module_symbol("kernel32", "CreateFileW")
         .expect("Could not find CreateFileW");
 

@@ -30,24 +30,12 @@ static_detour! {
 pub fn entry(_: usize) -> bool {
     // Set this up anyways as it'll log panics too
     broadsword::logging::init("log/alt-saves.log");
-    apply_hooks();
+    apply_file_hook();
+    apply_regulation_hook();
     return true;
 }
 
-// Overwrites the flag that seems to determine if the regulation bin file should be checked against
-// a particular hash. This check causes new save files to throw errors when the regbin has been
-// changed.
-fn apply_regbin_check_patch() {
-    let ptr = get_module_handle("eldenring.exe".to_string())
-        .expect("Could not find ER base") + REGBIN_CHECK_FLAG_IBO;
-
-    unsafe { *(ptr as *mut u8) = 0x0 };
-}
-
-fn apply_hooks() {
-    let create_file_w = runtime::get_module_symbol("kernel32", "CreateFileW")
-        .expect("Could not find CreateFileW");
-
+fn apply_regulation_hook() {
     let regulationmanager_constructor = get_module_handle("eldenring.exe".to_string())
         .expect("Could not locate eldenring.exe") + REGULATIONMANAGER_CONSTRUCTOR_IBO;
 
@@ -57,14 +45,31 @@ fn apply_hooks() {
                 mem::transmute(regulationmanager_constructor),
                 |allocated_space: u64, param_2: u64| {
                     let result = REGULATIONMANAGER_CONSTRUCTOR.call(allocated_space, param_2);
-                    apply_regbin_check_patch();
+                    patch_regbin_check();
                     result
                 }
             )
             .unwrap();
 
         REGULATIONMANAGER_CONSTRUCTOR.enable().unwrap();
+    }
+}
 
+// Overwrites the flag that seems to determine if the regulation bin file should be checked against
+// a particular hash. This check causes new save files to throw errors when the regbin has been
+// changed.
+fn patch_regbin_check() {
+    let ptr = get_module_handle("eldenring.exe".to_string())
+        .expect("Could not find ER base") + REGBIN_CHECK_FLAG_IBO;
+
+    unsafe { *(ptr as *mut u8) = 0x0 };
+}
+
+fn apply_file_hook() {
+    let create_file_w = runtime::get_module_symbol("kernel32", "CreateFileW")
+        .expect("Could not find CreateFileW");
+
+    unsafe {
         CREATE_FILE_W_HOOK
             .initialize(
                 mem::transmute(create_file_w),

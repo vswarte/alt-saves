@@ -6,11 +6,11 @@ mod config;
 
 use broadsword::dll;
 use broadsword::runtime;
-use broadsword::runtime::get_module_handle;
 use detour::static_detour;
-
+use broadsword::runtime::get_module_handle;
 use windows::core::{HSTRING, PCWSTR};
 use windows::Win32::Foundation::HANDLE;
+
 use crate::config::{get_rewrite_extension, get_seamless_rewrite_extension};
 
 const SAVEGAME_EXTENSION: &str = ".sl2";
@@ -19,7 +19,7 @@ const SC_SAVEGAME_EXTENSION: &str = ".co2";
 const SC_SAVEGAME_BACKUP_EXTENSION: &str = ".co2.bak";
 
 const REGBIN_CHECK_FLAG_IBO: usize = 0x3acea92;
-const REGULATIONMANAGER_CONSTRUCTOR_IBO: usize = 0xdc9330;
+const REGULATIONMANAGER_CONSTRUCTOR_IBO: usize = 0xdc95e0;
 
 static_detour! {
     static CREATE_FILE_W_HOOK: unsafe extern "system" fn(PCWSTR, u32, u32, u64, u32, u32, HANDLE) -> u64;

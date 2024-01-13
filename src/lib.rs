@@ -19,7 +19,7 @@ const SC_SAVEGAME_EXTENSION: &str = ".co2";
 const SC_SAVEGAME_BACKUP_EXTENSION: &str = ".co2.bak";
 
 const REGBIN_CHECK_FLAG_IBO: usize = 0x3acea92;
-const REGULATIONMANAGER_CONSTRUCTOR_IBO: usize = 0xdc95e0;
+const REGULATIONMANAGER_CONSTRUCTOR_IBO: usize = 0xdc96c0;
 
 static_detour! {
     static CREATE_FILE_W_HOOK: unsafe extern "system" fn(PCWSTR, u32, u32, u64, u32, u32, HANDLE) -> u64;
@@ -28,16 +28,13 @@ static_detour! {
 
 #[dll::entrypoint]
 pub fn entry(_: usize) -> bool {
-    // Set this up anyways as it'll log panics too
-    broadsword::logging::init("log/alt-saves.log");
     apply_file_hook();
     apply_regulation_hook();
-    return true;
+    true
 }
 
 fn apply_regulation_hook() {
-    let regulationmanager_constructor = get_module_handle("eldenring.exe".to_string())
-        .expect("Could not locate eldenring.exe") + REGULATIONMANAGER_CONSTRUCTOR_IBO;
+    let regulationmanager_constructor = get_main_module() + REGULATIONMANAGER_CONSTRUCTOR_IBO;
 
     unsafe {
         REGULATIONMANAGER_CONSTRUCTOR
@@ -59,9 +56,7 @@ fn apply_regulation_hook() {
 // a particular hash. This check causes new save files to throw errors when the regbin has been
 // changed.
 fn patch_regbin_check() {
-    let ptr = get_module_handle("eldenring.exe".to_string())
-        .expect("Could not find ER base") + REGBIN_CHECK_FLAG_IBO;
-
+    let ptr = get_main_module() + REGBIN_CHECK_FLAG_IBO;
     unsafe { *(ptr as *mut u8) = 0x0 };
 }
 
@@ -84,7 +79,7 @@ fn apply_file_hook() {
                     // Doing this here to ensure the string isn't dropped until after the fn call
                     // otherwise the string's source is dropped before the pointer is consumed.
                     let patched_path = transform_path(path)
-                        .map(|s| HSTRING::from(s));
+                        .map(HSTRING::from);
 
                     let effective_path = match patched_path {
                         None => path,
@@ -129,4 +124,11 @@ unsafe fn transform_path(path: PCWSTR) -> Option<String> {
     } else {
         None
     }
+}
+
+/// Attempts to retrieve the main module of the game
+pub fn get_main_module() -> usize {
+    get_module_handle("eldenring.exe")
+        .or_else(|_| get_module_handle("start_protected_game.exe"))
+        .expect("Could not locate main module")
 }

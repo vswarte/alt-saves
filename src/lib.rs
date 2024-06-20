@@ -18,8 +18,8 @@ const SAVEGAME_BACKUP_EXTENSION: &str = ".sl2.bak";
 const SC_SAVEGAME_EXTENSION: &str = ".co2";
 const SC_SAVEGAME_BACKUP_EXTENSION: &str = ".co2.bak";
 
-const REGBIN_CHECK_FLAG_IBO: usize = 0x3acea92;
-const REGULATIONMANAGER_CONSTRUCTOR_IBO: usize = 0xdc96c0;
+const REGBIN_CHECK_FLAG_IBO: usize = 0x3b40042;
+const REGULATIONMANAGER_CONSTRUCTOR_IBO: usize = 0xe076a0;
 
 static_detour! {
     static CREATE_FILE_W_HOOK: unsafe extern "system" fn(PCWSTR, u32, u32, u64, u32, u32, HANDLE) -> u64;

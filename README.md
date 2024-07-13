@@ -1,4 +1,4 @@
-# Elden Ring alternative saves
+# Elden Ring alt-saves :floppy_disk:
 
 This mod allows you to use an alternate save file for your playthrough when enabled.
 

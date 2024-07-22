@@ -40,7 +40,7 @@ Place the DLL in your mod folder, then load the DLL modengine2 using the followi
 config_eldenring.toml:
 ```toml
 # ...
-external_dlls = ["mod/eldenring_alt_saves.dll", "mod/some_other_dlls.dll"]
+external_dlls = ["mod\\eldenring_alt_saves.dll", "mod\\some_other_dlls.dll"]
 # ...
 ```
 Now read the configuration section as you'll most likely want to configure the extension used in your position.

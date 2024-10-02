@@ -7,7 +7,7 @@ for loading DLLs. Make sure to back up your save games because if this mod loads
 vanilla save file first.
 
 This mod has been extensively tested with [ModEngine2](https://github.com/soulsmods/ModEngine2). And somewhat with
-TechieW's Elden Mod Loader.
+~~TechieW's Elden Mod Loader.~~ Do not use Elden Mod loader to load this. It will be flaky and not work at times. I will offer no support for this combination.
 
 #### How do I back up my save files?
 You can find your save files in the folder `%appdata%/EldenRing/<steam ID>`. Making a copy of that folder should suffice.

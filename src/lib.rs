@@ -8,6 +8,7 @@ use broadsword::{dll, runtime, scanner};
 
 #[dll::entrypoint]
 pub fn entry(_: usize) -> bool {
+    broadsword::logging::init("alt-saves.log");
     file::hook();
     regulation::hook();
     true

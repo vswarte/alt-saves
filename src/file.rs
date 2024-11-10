@@ -1,4 +1,4 @@
-use crate::config::{get_rewrite_extension, get_seamless_rewrite_extension};
+use crate::config::get_rewrite_extension;
 
 use std::mem::transmute;
 
@@ -8,8 +8,6 @@ use windows::{core::{HSTRING, PCWSTR}, Win32::Foundation::HANDLE};
 
 const SAVEGAME_EXTENSION: &str = ".sl2";
 const SAVEGAME_BACKUP_EXTENSION: &str = ".sl2.bak";
-const SC_SAVEGAME_EXTENSION: &str = ".co2";
-const SC_SAVEGAME_BACKUP_EXTENSION: &str = ".co2.bak";
 
 static_detour! {
     static CREATE_FILE_W_HOOK: unsafe extern "C" fn(PCWSTR, u32, u32, u64, u32, u32, HANDLE) -> u64;
@@ -75,15 +73,7 @@ unsafe fn transform_path(path: PCWSTR) -> Option<String> {
         path_string.ends_with(SAVEGAME_BACKUP_EXTENSION) {
 
         Some(path_string.replace(SAVEGAME_EXTENSION, get_rewrite_extension()))
-    } else if path_string.ends_with(SC_SAVEGAME_EXTENSION) ||
-        path_string.ends_with(SC_SAVEGAME_BACKUP_EXTENSION) {
-
-        let extension = get_seamless_rewrite_extension()
-            .map(|f| f.as_str())
-            .unwrap_or(get_rewrite_extension());
-
-        Some(path_string.replace(SC_SAVEGAME_EXTENSION, extension))
-    } else {
-        None
     }
+
+    None
 }

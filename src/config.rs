@@ -10,15 +10,11 @@ static mut CONFIG: sync::OnceLock<Config> = sync::OnceLock::new();
 #[derive(Deserialize)]
 pub struct Config {
     pub extension: String,
-    pub seamless_extension: Option<String>,
 }
 
 impl Default for Config {
     fn default() -> Self {
-        Config {
-            extension: ".mod".to_string(),
-            seamless_extension: Some(".mod.co2".to_string())
-        }
+        Config { extension: ".mod".to_string() }
     }
 }
 
@@ -37,8 +33,4 @@ fn read_config_file() -> Option<Config> {
 
 pub fn get_rewrite_extension() -> &'static str {
     get_config_file().extension.as_ref()
-}
-
-pub fn get_seamless_rewrite_extension() -> Option<&'static String> {
-    get_config_file().seamless_extension.as_ref()
 }

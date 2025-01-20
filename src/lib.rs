@@ -17,6 +17,7 @@ static_detour! {
 }
 
 #[no_mangle]
+#[cfg(not(feature = "lib"))]
 pub unsafe extern "C" fn DllMain(_base: usize, reason: u32) -> bool {
     match reason {
         1 => {

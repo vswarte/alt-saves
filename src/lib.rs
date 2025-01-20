@@ -7,10 +7,12 @@ use std::path;
 
 use retour::static_detour;
 use serde::Deserialize;
-use tracing_panic::panic_hook;
-use windows::core::{s, HSTRING, PCWSTR};
+use windows::core::{s, PCWSTR};
 use windows::Win32::Foundation::HANDLE;
 use windows::Win32::System::LibraryLoader::{GetModuleHandleA, GetProcAddress};
+
+#[cfg(not(feature = "lib"))]
+use tracing_panic::panic_hook;
 
 static_detour! {
     static CREATE_FILE_W_HOOK: unsafe extern "C" fn(PCWSTR, u32, u32, u64, u32, u32, HANDLE) -> u64;
@@ -49,19 +51,18 @@ pub fn init(config: Config) -> Result<(), Box<dyn Error>> {
                 move |path, access, share, security, disposition, attributes, template| {
                     let result_path = if path.as_wide().ends_with(&[0x2E, 0x73, 0x6C, 0x32]) {
                         let path = path.to_string().unwrap();
-                        RequestedPath::Rewritten(HSTRING::from(format!(
-                            "{}{}",
-                            &path[..path.len() - 4],
-                            &config.extension
-                        )))
+                        let wide_path = format!("{}{}", &path[..path.len() - 4], &config.extension)
+                            .encode_utf16()
+                            .chain(std::iter::once(0))
+                            .collect::<Vec<u16>>();
+
+                        RequestedPath::Rewritten(PCWSTR(wide_path.as_ptr()))
                     } else {
                         RequestedPath::Untouched(path)
                     };
 
-                    tracing::info!("Rewritten {:?}", result_path);
-
                     CREATE_FILE_W_HOOK.call(
-                        path,
+                        result_path.as_pcwstr(),
                         access,
                         share,
                         security,
@@ -74,7 +75,7 @@ pub fn init(config: Config) -> Result<(), Box<dyn Error>> {
             .enable()?;
     }
 
-    tracing::info!("CreateFileW {create_file_w:x}");
+    tracing::debug!("CreateFileW {create_file_w:x}");
 
     regulation::hook();
 
@@ -104,16 +105,14 @@ impl Default for Config {
 #[derive(Debug)]
 pub enum RequestedPath {
     Untouched(PCWSTR),
-    Rewritten(HSTRING),
+    Rewritten(PCWSTR),
 }
 
 impl RequestedPath {
-    // fn as_pcwstr(&self) -> PCWSTR {
-    //     match self {
-    //         RequestedPath::Untouched(p) => *p,
-    //         RequestedPath::Rewritten(s) => {
-    //             todo!()
-    //         }
-    //     }
-    // }
+    fn as_pcwstr(&self) -> PCWSTR {
+        match self {
+            RequestedPath::Untouched(p) => *p,
+            RequestedPath::Rewritten(s) => *s,
+        }
+    }
 }

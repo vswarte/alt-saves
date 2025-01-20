@@ -34,6 +34,8 @@ pub fn hook() {
         .rva_to_va(matches[1])
         .expect("Failed to convert rva to va") as *mut u8;
 
+    tracing::debug!("Found regbin safety check at {:?}", addr);
+
     unsafe {
         let mut old_protect = PAGE_PROTECTION_FLAGS::default();
         VirtualProtect(addr as _, 1, PAGE_READWRITE, &mut old_protect).unwrap();

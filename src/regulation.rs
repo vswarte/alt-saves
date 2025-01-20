@@ -1,39 +1,46 @@
-use region::Protection;
-use retour::static_detour;
-use std::mem::transmute;
+use pelite::pattern;
+use pelite::pattern::Atom;
+use pelite::pe::{Pe, PeView};
+use windows::core::PCSTR;
+use windows::Win32::System::LibraryLoader::GetModuleHandleA;
+use windows::Win32::System::Memory::VirtualProtect;
+use windows::Win32::System::Memory::{PAGE_PROTECTION_FLAGS, PAGE_READWRITE};
 
-use crate::match_instruction_pattern;
-
-const REGBIN_CHECK_FLAG_SETTER_PATTERN: &str = concat!(
-    // MOV RAX, qword ptr [RBX+0x8]
-    "01001... 10001011 01000011 00001000",
-    // MOV [RAX+0xC8], RCX
-    "01001... 10001001 10001000 11001000 00000000 00000000 00000000",
-    // CMP [???], CL
-    "00111000 00001101 ........ ........ ........ ........",
-    // JNZ [???]
-    "01110101 ........",
-    // CALL [???]
-    "11101000 ........ ........ ........ ........",
-    // MOV [RegBinFlags + 0], AL
-    "10001000 00000101 ........ ........ ........ ........",
-    // MOV [RegBinFlags + 1], AL
-    "10001000 00000101 ........ ........ ........ ........",
-    // MOV [RegBinFlags + 2], AL
-    "[10001000 00000101 ........ ........ ........ ........]",
+const REGBIN_SAFETY_CHECK_PATCH: &[Atom] = pattern!(
+    "
+    48 8b 43 08
+    48 89 88 c8 00 00 00
+    38 0d ? ? ? ?
+    75 ?
+    e8 ? ? ? ?
+    88 05 ? ? ? ?
+    88 05 ? ? ? ?
+    ' 88 05 ? ? ? ?
+    "
 );
 
 pub fn hook() {
-    let safety_flag_initializer_va = match_instruction_pattern(REGBIN_CHECK_FLAG_SETTER_PATTERN)
-        .map(|m| m.captures.first().map(|c| c.location as *mut u8))
-        .flatten()
-        .expect("Could not find the regbin check flag setter");
+    let mut matches = [0; 2];
+    let view = unsafe {
+        PeView::module(GetModuleHandleA(PCSTR(std::ptr::null())).unwrap().0 as *const u8)
+    };
+    if !view
+        .scanner()
+        .finds_code(REGBIN_SAFETY_CHECK_PATCH, &mut matches)
+    {
+        panic!("Failed to find the pattern for regbin safety check");
+    }
+    let addr = view
+        .rva_to_va(matches[1])
+        .expect("Failed to convert rva to va") as *mut u8;
 
     unsafe {
-        region::protect(safety_flag_initializer_va, 1, Protection::READ_WRITE_EXECUTE)
-            .expect("Could not change memory protection for flag initializer");
+        let mut old_protect = PAGE_PROTECTION_FLAGS::default();
+        VirtualProtect(addr as _, 1, PAGE_READWRITE, &mut old_protect).unwrap();
 
-        // XOR in stead of MOV so we clear out the flag
-        *safety_flag_initializer_va = 0x30;
+        // XOR instead of MOV so we clear out the flag
+        std::ptr::write(addr, 0x30);
+
+        VirtualProtect(addr as _, 1, old_protect, &mut old_protect).unwrap();
     }
 }

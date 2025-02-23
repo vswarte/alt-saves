@@ -56,7 +56,8 @@ pub fn init(config: Config) -> Result<(), Box<dyn Error>> {
                             .chain(std::iter::once(0))
                             .collect::<Vec<u16>>();
 
-                        RequestedPath::Rewritten(PCWSTR(wide_path.as_ptr()))
+                        let ptr = PCWSTR(wide_path.as_ptr());
+                        RequestedPath::Rewritten(wide_path, ptr)
                     } else {
                         RequestedPath::Untouched(path)
                     };
@@ -105,14 +106,14 @@ impl Default for Config {
 #[derive(Debug)]
 pub enum RequestedPath {
     Untouched(PCWSTR),
-    Rewritten(PCWSTR),
+    Rewritten(Vec<u16>, PCWSTR),
 }
 
 impl RequestedPath {
     fn as_pcwstr(&self) -> PCWSTR {
         match self {
             RequestedPath::Untouched(p) => *p,
-            RequestedPath::Rewritten(s) => *s,
+            RequestedPath::Rewritten(_, s) => *s,
         }
     }
 }

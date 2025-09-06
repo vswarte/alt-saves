@@ -1,5 +1,8 @@
 # Alt Saves :floppy_disk:
 
+> [!CAUTION]
+> Savefile override functionality has now been added to [me3](https://github.com/garyttierney/me3). I will be not be supporting this mod any further but the DLLs will remain accessible. If you're following some guide stating you need this mod consider using me3's save override feature instead.
+
 This mod allows you to use an alternate save file for your playthrough when enabled.
 
 **A word of warning**: this mod has been tested as far as I can but mod loaders use wildly different approaches and timings
